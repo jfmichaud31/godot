@@ -33,6 +33,8 @@
 #include "scene/3d/area.h"
 #include "scene/3d/camera.h"
 #include "scene/main/viewport.h"
+#include "scene/3d/listener.h"
+
 void AudioStreamPlayer3D::_mix_audio() {
 
 	if (!stream_playback.is_valid() || !active ||
@@ -318,7 +320,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (!vp->is_audio_listener())
 					continue;
 
-				Vector3 local_pos = camera->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
+				Listener *listener = vp->get_listener();
+				// uses the Listener set in Viewport if one is available
+				Transform listener_global_transform = listener ? listener->get_global_transform() : camera->get_global_transform();
+
+				Vector3 local_pos = listener_global_transform.orthonormalized().affine_inverse().xform(global_pos);
 
 				float dist = local_pos.length();
 
@@ -326,8 +332,8 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				Vector3 cam_area_pos;
 
 				if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
-					area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), camera->get_global_transform().origin);
-					cam_area_pos = camera->get_global_transform().affine_inverse().xform(area_sound_pos);
+					area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_global_transform.origin);
+					cam_area_pos = listener_global_transform.affine_inverse().xform(area_sound_pos);
 				}
 
 				if (max_distance > 0) {
@@ -355,7 +361,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				float db_att = (1.0 - MIN(1.0, multiplier)) * attenuation_filter_db;
 
 				if (emission_angle_enabled) {
-					Vector3 camtopos = global_pos - camera->get_global_transform().origin;
+					Vector3 camtopos = global_pos - listener_global_transform.origin;
 					float c = camtopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
 					float angle = Math::rad2deg(Math::acos(c));
 					if (angle > emission_angle)
@@ -376,7 +382,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					output.vol[0].l = 1.0 - c;
 					output.vol[0].r = c;
 				} else {
-					Vector3 camtopos = global_pos - camera->get_global_transform().origin;
+					Vector3 camtopos = global_pos - listener_global_transform.origin;
 					float c = camtopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
 					float angle = Math::rad2deg(Math::acos(c));
 					float av = angle * (flat_pos.x < 0 ? -1 : 1) / 180.0;
@@ -510,7 +516,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					}
 				}
 
-				if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+				if (doppler_tracking != DOPPLER_TRACKING_DISABLED && !listener) {
 
 					Vector3 camera_velocity = camera->get_doppler_tracked_velocity();
 
