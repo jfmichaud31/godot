@@ -516,11 +516,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					}
 				}
 
-				if (doppler_tracking != DOPPLER_TRACKING_DISABLED && !listener) {
+				if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 
-					Vector3 camera_velocity = camera->get_doppler_tracked_velocity();
+					Vector3 listener_velocity = listener ? listener->get_doppler_tracked_velocity() : camera->get_doppler_tracked_velocity();
 
-					Vector3 local_velocity = camera->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - camera_velocity);
+					Vector3 local_velocity = listener_global_transform.orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 
 					if (local_velocity == Vector3()) {
 						output.pitch_scale = 1.0;

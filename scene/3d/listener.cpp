@@ -76,6 +76,10 @@ void Listener::_update_listener() {
 
 	if (is_inside_tree() && is_current()) {
 		get_viewport()->_listener_transform_changed_notify();
+
+		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+			velocity_tracker->update_position(get_global_transform().origin);
+		}
 	}
 }
 
@@ -147,6 +151,31 @@ bool Listener::is_current() const {
 	return false;
 }
 
+void Listener::set_doppler_tracking(DopplerTracking p_tracking) {
+
+	if (doppler_tracking == p_tracking)
+		return;
+
+	doppler_tracking = p_tracking;
+	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
+		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
+		velocity_tracker->reset(get_global_transform().origin);
+	}
+}
+
+Listener::DopplerTracking Listener::get_doppler_tracking() const {
+	return doppler_tracking;
+}
+
+Vector3 Listener::get_doppler_tracked_velocity() const {
+
+	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+		return velocity_tracker->get_tracked_linear_velocity();
+	} else {
+		return Vector3();
+	}
+}
+
 bool Listener::_can_gizmo_scale() const {
 
 	return false;
@@ -164,6 +193,14 @@ void Listener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_current"), &Listener::clear_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Listener::is_current);
 	ClassDB::bind_method(D_METHOD("get_listener_transform"), &Listener::get_listener_transform);
+	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Listener::set_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Listener::get_doppler_tracking);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
+
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP)
 }
 
 Listener::Listener() {
@@ -172,6 +209,8 @@ Listener::Listener() {
 	force_change = false;
 	set_notify_transform(true);
 	//active=false;
+	velocity_tracker.instance();
+	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 }
 
 Listener::~Listener() {

@@ -33,10 +33,18 @@
 
 #include "scene/3d/spatial.h"
 #include "scene/main/viewport.h"
+#include "scene/3d/spatial_velocity_tracker.h"
 
 class Listener : public Spatial {
 
 	GDCLASS(Listener, Spatial);
+
+public:
+	enum DopplerTracking {
+		DOPPLER_TRACKING_DISABLED,
+		DOPPLER_TRACKING_IDLE_STEP,
+		DOPPLER_TRACKING_PHYSICS_STEP
+	};
 
 private:
 	bool force_change;
@@ -49,6 +57,9 @@ private:
 
 	friend class Viewport;
 	void _update_audio_listener_state();
+
+	DopplerTracking doppler_tracking;
+	Ref<SpatialVelocityTracker> velocity_tracker;
 
 protected:
 	void _update_listener();
@@ -68,6 +79,10 @@ public:
 
 	virtual Transform get_listener_transform() const;
 
+	void set_doppler_tracking(DopplerTracking p_tracking);
+	DopplerTracking get_doppler_tracking() const;
+	Vector3 get_doppler_tracked_velocity() const;
+
 	void set_visible_layers(uint32_t p_layers);
 	uint32_t get_visible_layers() const;
 
@@ -76,5 +91,7 @@ public:
 	Listener();
 	~Listener();
 };
+
+VARIANT_ENUM_CAST(Listener::DopplerTracking);
 
 #endif
