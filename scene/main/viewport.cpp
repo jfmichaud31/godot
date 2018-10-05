@@ -742,7 +742,13 @@ void Viewport::_listener_set(Listener *p_listener) {
 	if (listener == p_listener)
 		return;
 
+	Listener *old_listener = listener;
+
 	listener = p_listener;
+
+	if (old_listener) {
+		old_listener->clear_current();
+	}
 
 	_update_listener();
 	_listener_transform_changed_notify();
