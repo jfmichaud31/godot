@@ -40,36 +40,13 @@ void Listener::_request_listener_update() {
 	_update_listener();
 }
 
-bool Listener::_set(const StringName &p_name, const Variant &p_value) {
+void Listener::set_current(bool p_current) {
 
-	if (p_name == "current") {
-		if (p_value.operator bool()) {
-			make_current();
-		} else {
-			clear_current();
-		}
-	} else
-		return false;
-
-	return true;
-}
-bool Listener::_get(const StringName &p_name, Variant &r_ret) const {
-
-	if (p_name == "current") {
-		if (is_inside_tree() && get_tree()->is_node_being_edited(this)) {
-			r_ret = current;
-		} else {
-			r_ret = is_current();
-		}
-	} else
-		return false;
-
-	return true;
-}
-
-void Listener::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	p_list->push_back(PropertyInfo(Variant::BOOL, "current"));
+	if (p_current) {
+		make_current();
+	} else {
+		clear_current();
+	}
 }
 
 void Listener::_update_listener() {
@@ -192,10 +169,12 @@ void Listener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_current"), &Listener::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current"), &Listener::clear_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Listener::is_current);
+	ClassDB::bind_method(D_METHOD("set_current"), &Listener::set_current);
 	ClassDB::bind_method(D_METHOD("get_listener_transform"), &Listener::get_listener_transform);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Listener::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Listener::get_doppler_tracking);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED)
