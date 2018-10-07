@@ -87,6 +87,9 @@ void Listener::_notification(int p_what) {
 			get_viewport()->_listener_remove(this);
 
 		} break;
+		case NOTIFICATION_LOST_CURRENT: {
+			current = false;
+		} break;
 	}
 }
 

@@ -46,6 +46,11 @@ public:
 		DOPPLER_TRACKING_PHYSICS_STEP
 	};
 
+	enum {
+		NOTIFICATION_BECAME_CURRENT = 50,
+		NOTIFICATION_LOST_CURRENT = 51
+	};
+
 private:
 	bool force_change;
 	bool current;
