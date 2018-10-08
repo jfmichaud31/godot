@@ -310,19 +310,41 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				break;
 			}
 
-			List<Camera *> cameras;
-			world->get_camera_list(&cameras);
+			List<Node *> viewports;
+			get_tree()->get_nodes_in_group("_viewports", &viewports);
 
-			for (List<Camera *>::Element *E = cameras.front(); E; E = E->next()) {
+			for (List<Node *>::Element *E = viewports.front(); E; E = E->next()) {
 
-				Camera *camera = E->get();
-				Viewport *vp = camera->get_viewport();
-				if (!vp->is_audio_listener())
+				Viewport *vp = cast_to<Viewport>(E->get());
+				if (!vp || !vp->is_audio_listener()) {
 					continue;
+				}
+
+				// If we are editing we want to hear only from our point of view
+				if (get_tree()->is_node_being_edited(vp)) {
+					continue;
+				}
+
+				// Listener and AudioStreamPlayer3D should be in the same World to be played
+				if (vp->find_world() != world) {
+					continue;
+				}
 
 				Listener *listener = vp->get_listener();
-				// uses the Listener set in Viewport if one is available
-				Transform listener_global_transform = listener ? listener->get_global_transform() : camera->get_global_transform();
+				Camera *camera = vp->get_camera();
+
+				Transform listener_global_transform;
+
+				// Priority on Listener over Camera
+				if (listener) {
+					listener_global_transform = listener->get_global_transform();
+				}
+				else if (camera){
+					listener_global_transform = camera->get_global_transform();
+				}
+				else {
+					continue; // Without listener or camera, no sound
+				}
 
 				Vector3 local_pos = listener_global_transform.orthonormalized().affine_inverse().xform(global_pos);
 
