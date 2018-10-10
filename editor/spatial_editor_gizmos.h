@@ -70,6 +70,20 @@ public:
 	AudioStreamPlayer3DSpatialGizmoPlugin();
 };
 
+class ListenerSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+
+	GDCLASS(ListenerSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+
+	Ref<ArrayMesh> shape_mesh;
+
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+	ListenerSpatialGizmoPlugin();
+};
+
 class CameraSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(CameraSpatialGizmoPlugin, EditorSpatialGizmoPlugin);

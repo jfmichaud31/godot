@@ -1134,6 +1134,52 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
+////// Listener gizmo
+
+ListenerSpatialGizmoPlugin::ListenerSpatialGizmoPlugin() {
+
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+
+	create_icon_material("listener_icon", SpatialEditor::get_singleton()->get_icon("GizmoListener", "EditorIcons"));
+	create_material("listener_gizmo_material", gizmo_color);
+	Ref<SpatialMaterial> material = get_material("listener_gizmo_material");
+	material->set_albedo(gizmo_color);
+
+	Vector<Vector3> verts;
+	verts.push_back(Vector3(0, 0, -0.6));
+	verts.push_back(Vector3(0.2, 0, -0.2));
+	verts.push_back(Vector3(-0.2, 0, -0.2));
+	verts.push_back(Vector3(0, 0, -0.6));
+
+	Array verts_array;
+	verts_array.resize(VS::ARRAY_MAX);
+	verts_array[Mesh::ARRAY_VERTEX] = verts;
+
+	shape_mesh.instance();
+	shape_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, verts_array);
+	shape_mesh->surface_set_material(0, material);
+
+}
+
+bool ListenerSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+
+	return Object::cast_to<Listener>(p_spatial) != NULL;
+}
+
+String ListenerSpatialGizmoPlugin::get_name() const {
+
+	return "Listener";
+}
+
+void ListenerSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	p_gizmo->clear();
+
+	p_gizmo->add_mesh(shape_mesh);
+
+	Ref<Material> icon = get_material("listener_icon", p_gizmo);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
+}
+
 //////
 
 CameraSpatialGizmoPlugin::CameraSpatialGizmoPlugin() {
