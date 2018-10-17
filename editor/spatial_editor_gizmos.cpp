@@ -1138,27 +1138,42 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) 
 
 ListenerSpatialGizmoPlugin::ListenerSpatialGizmoPlugin() {
 
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/listener", Color(0.2, 0.33, 1.0));
 
 	create_icon_material("listener_icon", SpatialEditor::get_singleton()->get_icon("GizmoListener", "EditorIcons"));
 	create_material("listener_gizmo_material", gizmo_color);
-	Ref<SpatialMaterial> material = get_material("listener_gizmo_material");
-	material->set_albedo(gizmo_color);
 
 	Vector<Vector3> verts;
-	verts.push_back(Vector3(0, 0, -0.6));
-	verts.push_back(Vector3(0.2, 0, -0.2));
-	verts.push_back(Vector3(-0.2, 0, -0.2));
-	verts.push_back(Vector3(0, 0, -0.6));
+	verts.push_back(Vector3(0.305189, 0.000178, 0.078578));
+	verts.push_back(Vector3(0.390238, 0.000178, -0.086121));
+	verts.push_back(Vector3(0.305189, 0.000178, -0.112979));
+	verts.push_back(Vector3(0.354623, 0.000178, -0.112253));
+	verts.push_back(Vector3(0.390484, 0.000178, -0.050551));
+	verts.push_back(Vector3(0.357164, 0.000178, -0.022966));
+	verts.push_back(Vector3(0.305189, 0.000178, -0.022966));
+	verts.push_back(Vector3(0.403387, 0.000178, 0.078371));
+	verts.push_back(Vector3(-0.342969, -0.000000, 0.074426));
+	verts.push_back(Vector3(-0.342969, -0.000000, -0.124686));
+	verts.push_back(Vector3(-0.236260, -0.000000, 0.074426));
+	verts.push_back(Vector3(0.000662, 0.000000, -0.107523));
+	verts.push_back(Vector3(0.000662, 0.000000, -0.399618));
+	verts.push_back(Vector3(0.087066, 0.000000, -0.302586));
+	verts.push_back(Vector3(-0.086682, 0.000000, -0.302586));
 
-	Array verts_array;
-	verts_array.resize(VS::ARRAY_MAX);
-	verts_array[Mesh::ARRAY_VERTEX] = verts;
+	const int indices_temp[] = { 2, 0, 4, 1, 1, 3, 3, 2, 5, 4, 6, 5, 5, 7, 9, 8, 8, 10, 12, 11, 13, 12, 12, 14, -1 };
+	Vector<int> indices;
+
+	for (int i = 0; indices_temp[i] != -1; ++i) {
+		indices.push_back(indices_temp[i]);
+	}
+
+	Array lines_array;
+	lines_array.resize(VS::ARRAY_MAX);
+	lines_array[Mesh::ARRAY_VERTEX] = verts;
+	lines_array[Mesh::ARRAY_INDEX] = indices;
 
 	shape_mesh.instance();
-	shape_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, verts_array);
-	shape_mesh->surface_set_material(0, material);
-
+	shape_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, lines_array);
 }
 
 bool ListenerSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -1174,9 +1189,13 @@ String ListenerSpatialGizmoPlugin::get_name() const {
 void ListenerSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->clear();
 
+	Ref<SpatialMaterial> material = get_material("listener_gizmo_material", p_gizmo);
+	Ref<SpatialMaterial> icon = get_material("listener_icon", p_gizmo);
+
+	shape_mesh->surface_set_material(0, material);
+
 	p_gizmo->add_mesh(shape_mesh);
 
-	Ref<Material> icon = get_material("listener_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
@@ -3692,7 +3711,7 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->add_collision_segments(lines);
 }
 
-//////
+	//////
 
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
